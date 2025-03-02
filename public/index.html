@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nowtomation - Imagens Dinâmicas</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+      /* Reset geral para remover margens e paddings padrões */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f4f4f9;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    gap: 30px;
+    width: 100%;
+    max-width: 1200px;
+}
+
+.left-panel {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.section {
+    padding: 20px;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section textarea{
+    height: 200px;
+}
+
+h3 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.controls {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+input[type="text"], input[type="file"], textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+input[type="color"] {
+    width: 50px;
+    height: 40px;
+    border: none;
+}
+
+
+button {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    color: white;
+    background: #32A6BD;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #2FC089;
+}
+
+#preview-container {
+    display: flex;
+    margin-left: 70%;
+    transform: translate(-50%);
+    justify-content: center;
+    align-items: center;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: absolute;
+}
+
+#preview {
+    width: 100%;
+    max-width: 350px;
+    height: auto;
+    position: relative;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+}
+
+#overlay, #textOverlay {
+    position: absolute;
+}
+
+.modal { display: none; z-index: 2000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
+            .modal-content { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; position: relative; text-align: center; }
+            .close { cursor: pointer; position: absolute; top: 10px; right: 15px; font-size: 20px; }
+            .modal img { max-width: 50%; height: auto; display: block; margin: 10px auto; }
+            #openModal { position: fixed; width: 270px; bottom: 20px; right: 20px; padding: 10px 20px;     background: #32A6BD;
+                ; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 2000; }
+
+            #clearStorage {position: fixed; width: 270px; bottom: 20px; left: 20px; padding: 10px 20px;     background: #32A6BD;
+                color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 2000; }
+
+                #openModal:hover {
+    background: #2FC089;
+    
+}
+
+#clearStorage:hover {
+    background: #2FC089;
+    
+}
+        </style>
+</head>
+<body>
+
+    <button id="clearStorage">Limpar Armazenamento</button>
+
+    <button id="openModal">Redimensionar imagem base</button>
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Envie sua imagem</h2>
+            <input type="file" id="imageInput">
+            <button onclick="uploadImage()">Redimensionar</button>
+            <p id="output"></p>
+        </div>
+    </div>
+    <div class="container">
+        <div class="left-panel">
+           
+            <div class="section">
+                <label>Imagem Base (Deve ter exatamente 350px de largura):</label>
+                <input type="file" id="baseImageInput" accept="image/*">
+                <label>Imagem Sobreposta Deve ter exatamente o formato 1:1:</label>
+                <input type="file" id="overlayImageInput" accept="image/*">
+                <label>Texto:</label>
+                <input type="text" id="textInput" placeholder="Digite seu texto">
+            </div>
+            
+            <div class="section controls">
+                <label>Tamanho: <input type="range" id="sizeRange" min="50" max="500" value="100"></label>
+                <label>Posição X: <input type="range" id="posXRange" min="0" max="500" value="50"></label>
+                <label>Posição Y: <input type="range" id="posYRange" min="0" max="500" value="50"></label>
+                <label>Border Radius: <input type="range" id="borderRadiusRange" min="0" max="100" value="0"></label>
+                <label>Cor do Texto: <input type="color" id="textColor"></label>
+                <label>Tamanho do Texto: <input type="range" id="textSizeRange" min="10" max="100" value="20"></label>
+                <label>Posição X Texto: <input type="range" id="textPosXRange" min="0" max="500" value="50"></label>
+                <label>Posição Y Texto: <input type="range" id="textPosYRange" min="0" max="800" value="50"></label>
+            </div>
+            
+            <div class="section">
+                <button onclick="generateCurl()">Gerar cURL</button>
+                <textarea id="curlCommand" readonly></textarea>
+            </div>
+        </div>
+    
+        <div id="preview-container">
+            <div id="preview"></div>
+        </div>
+    </div>
+
+    <script>
+        let baseImageUrl = '';
+        let overlayImageUrl = '';
+
+        document.getElementById('baseImageInput').addEventListener('change', async function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Exibir preview imediatamente
+                baseImageUrl = URL.createObjectURL(file);
+                updatePreview();
+
+                // Upload ao backend
+                const formData = new FormData();
+                formData.append('image', file);
+                const response = await fetch('/upload-base', { method: 'POST', body: formData });
+                const data = await response.json();
+                baseImageUrl = data.imageUrl; // Atualiza URL após o upload
+                updatePreview();
+            }
+        });
+
+        document.getElementById('overlayImageInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                overlayImageUrl = URL.createObjectURL(file);
+                updatePreview();
+            }
+        });
+
+        function updatePreview() {
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+
+            if (baseImageUrl) {
+                const img = document.createElement('img');
+                img.src = baseImageUrl;
+                img.style.width = '350px';
+                img.style.height = '100%';
+                preview.appendChild(img);
+            }
+
+            if (overlayImageUrl) {
+                const overlay = document.createElement('img');
+                overlay.src = overlayImageUrl;
+                overlay.id = 'overlay';
+                overlay.style.width = document.getElementById('sizeRange').value + 'px';
+                overlay.style.height = document.getElementById('sizeRange').value + 'px';
+                overlay.style.position = 'absolute';
+                overlay.style.top = document.getElementById('posYRange').value + 'px';
+                overlay.style.left = document.getElementById('posXRange').value + 'px';
+                overlay.style.borderRadius = document.getElementById('borderRadiusRange').value + '%';
+                preview.appendChild(overlay);
+            }
+
+            const text = document.getElementById('textInput').value;
+            if (text) {
+                const textOverlay = document.createElement('div');
+                textOverlay.id = 'textOverlay';
+                textOverlay.textContent = text;
+                textOverlay.style.position = 'absolute';
+                textOverlay.style.color = document.getElementById('textColor').value;
+                textOverlay.style.fontSize = document.getElementById('textSizeRange').value + 'px';
+                textOverlay.style.left = document.getElementById('textPosXRange').value + 'px';
+                textOverlay.style.top = document.getElementById('textPosYRange').value + 'px';
+                textOverlay.style.fontWeight = 'bold';
+                preview.appendChild(textOverlay);
+            }
+        }
+
+        document.querySelectorAll('.controls input').forEach(input => {
+            input.addEventListener('input', updatePreview);
+        });
+
+        function generateCurl() {
+            const text = document.getElementById('textInput').value;
+            const textColor = document.getElementById('textColor').value;
+            const textSize = document.getElementById('textSizeRange').value;
+            const textPosX = document.getElementById('textPosXRange').value;
+            const textPosY = document.getElementById('textPosYRange').value;
+            const overlaySize = document.getElementById('sizeRange').value;
+            const overlayPosX = document.getElementById('posXRange').value;
+            const overlayPosY = document.getElementById('posYRange').value;
+            const borderRadius = document.getElementById('borderRadiusRange').value;
+
+            const curlCommand = `curl -X POST "${window.location.origin}/generate-image" -H "Content-Type: application/json" -d 
+'{
+"baseImage": "${baseImageUrl}",
+"overlayImage": "<url da imagem de overlay aqui>",
+"text": "<texto personalizado aqui>",
+"textColor": "${textColor}",
+"textSize": "${textSize}",
+"textPosX": "${textPosX}",
+"textPosY": "${textPosY}",
+"overlaySize": "${overlaySize}",
+"overlayPosX": "${overlayPosX}",
+"overlayPosY": "${overlayPosY}",
+"overlayRadius": "${borderRadius}"
+}'`;
+            document.getElementById('curlCommand').value = curlCommand;
+        }
+
+        document.getElementById("openModal").addEventListener("click", function() {
+                document.getElementById("modal").style.display = "flex";
+            });
+            function closeModal() {
+                document.getElementById("modal").style.display = "none";
+                document.getElementById("output").innerHTML = "";
+            }
+            function uploadImage() {
+                const fileInput = document.getElementById("imageInput").files[0];
+                if (!fileInput) return alert("Escolha uma imagem!");
+                const formData = new FormData();
+                formData.append("image", fileInput);
+                fetch("/resize-image", { method: "POST", body: formData })
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById("output").innerHTML = `<p>Imagem redimensionada para 350px de largura:</p><img src="${data.resizedImageUrl}"><p>Clique com o botão direito e escolha 'Salvar como'.</p>`;
+                    })
+                    .catch(() => alert("Erro ao enviar imagem!"));
+            }
+
+            document.getElementById("clearStorage").addEventListener("click", function() {
+                if (confirm("Tem certeza que deseja apagar todas as imagens? Isso pode interromper automações.")) {
+                    fetch("/clear-storage", { method: "DELETE" })
+                        .then(res => res.json())
+                        .then(data => alert(data.message))
+                        .catch(() => alert("Erro ao limpar armazenamento!"));
+                }
+            });
+    </script>
+</body>
+</html>
