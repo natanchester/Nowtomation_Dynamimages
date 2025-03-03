@@ -3,7 +3,7 @@
  
 ![Nowtomation (2)](https://github.com/user-attachments/assets/d5b5cc24-5b27-40cb-ab05-7d0b8b008db2)
 
-0. --> Download node.js.
+0. --> Download node.js (https://nodejs.org/) .
 1. --> npm install.
 2. --> npm update.
 3. --> Set your token and session secret in the .env file.
