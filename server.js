@@ -1,23 +1,27 @@
 const express = require('express');
+const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const sharp = require('sharp');
+const bcrypt = require('bcrypt');
 require('dotenv').config();
-
 const app = express();
 const PORT = 3000;
-
-app.use(express.json());
-
+const USERS_FILE = "user.json";
 const uploadDir = path.join(__dirname, 'uploads');
 const processedDir = path.join(__dirname, 'processed_images');
+const API_TOKEN = process.env.ADMIN_API_TOKEN;
 
 [uploadDir, processedDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir);
     }
+});
+
+app.get('/', (req, res) => {
+    res.status(404).send('Página não encontrada');
 });
 
 const storage = multer.diskStorage({
@@ -29,11 +33,90 @@ const storage = multer.diskStorage({
         cb(null, uniqueSuffix + path.extname(file.originalname));
     }
 });
+
 const upload = multer({ storage });
 
+app.use(express.json());
 app.use('/uploads', express.static(uploadDir));
 app.use('/processed_images', express.static(processedDir));
 app.use(express.static('public'));
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false, // Alterado para false para evitar sessões vazias
+    cookie: { secure: false, httpOnly: true } // Se for HTTPS, altere secure para true
+}));
+app.use((req, res, next) => {
+    if (req.path.endsWith('.html')) {
+      if (!req.session || !req.session.user) {
+        return res.redirect('/login.html');
+      }
+    }
+    next();
+  });
+
+
+function loadUsers() {
+    if (!fs.existsSync(USERS_FILE)) return [];
+
+    try {
+        const data = fs.readFileSync(USERS_FILE, 'utf8');
+        return JSON.parse(data) || [];
+    } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+        return []; // Retorna um array vazio em caso de erro
+    }
+}
+
+function verificaAutenticacao(req, res, next) {
+    if (req.session.user) {
+        return next(); // Se estiver logado, continua para a rota
+    }
+    res.redirect('/login'); // Se não estiver logado, manda para o login
+}
+
+app.use((req, res, next) => {
+    const publicRoutes = ['/login', '/login-page', '/register'];
+
+    // Se a rota for pública, permite acesso
+    if (publicRoutes.includes(req.path)) {
+        return next();
+    }
+
+    // Se o usuário estiver autenticado via sessão, permite acesso
+    if (req.session.user) {
+        return next();
+    }
+
+    // Se for uma API (requisição JSON) e o token de autorização estiver correto, permite acesso
+    const token = req.headers.authorization?.split(' ')[1]; // Obtém o token do header
+    if (req.headers.accept?.includes('application/json') && token === API_TOKEN) {
+        return next();
+    }
+
+    // Se for uma API, retorna erro 401 (não autorizado)
+    if (req.headers.accept?.includes('application/json')) {
+        return res.status(401).json({ error: 'Acesso não autorizado!' });
+    }
+
+    // Se não for API, redireciona para a página de login
+    return res.redirect('/login-page');
+});
+
+app.use('/Dynamimages', express.static('public'));
+
+
+
+async function authenticateUser(email, password) {
+    let users = loadUsers();
+    const user = users.find(u => u.email === email);
+    if (!user) return null;
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    return passwordMatch ? user : null;
+}
+
+
 
 async function downloadImage(imageUrl) {
     try {
@@ -59,6 +142,39 @@ async function downloadImage(imageUrl) {
         throw new Error('Falha ao baixar overlay');
     }
 }
+
+app.get('/verifica-sessao', (req, res) => {
+    res.json({ logado: !!req.session.user });
+});
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        return res.status(400).json({ error: 'E-mail e senha são obrigatórios!' });
+    }
+
+    const user = await authenticateUser(email, password);
+
+    if (!user) {
+        return res.status(401).json({ error: 'Credenciais inválidas!' });
+    }
+
+    req.session.user = { id: user.id, name: user.name, email: user.email }; // Armazena na sessão
+
+    res.json({ message: 'Login bem-sucedido!', user: req.session.user });
+});
+
+app.get('/login-page', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(() => {
+        res.redirect('/login-page');
+    });
+});
+
 
 app.post('/generate-image', async (req, res) => {
     try {
@@ -153,9 +269,6 @@ app.post('/generate-image', async (req, res) => {
     }
 });
 
-
-
-
 app.post('/upload-base', upload.single('image'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'Nenhuma imagem foi enviada!' });
@@ -164,27 +277,31 @@ app.post('/upload-base', upload.single('image'), (req, res) => {
     res.json({ imageUrl });
 });
 
-app.get('/Dynamimage', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+app.post("/resize-image", upload.single("image"), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: "Nenhuma imagem foi enviada!" });
+        }
 
+        const inputPath = req.file.path;
+        const outputFilename = `resized_${Date.now()}.png`;
+        const outputPath = path.join(processedDir, outputFilename);
 
-app.post('/resize-image', upload.single('image'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'Nenhuma imagem foi enviada!' });
+        await sharp(inputPath)
+            .resize(350)
+            .toFormat("png", { quality: 90 })
+            .toFile(outputPath);
+
+        const resizedImageUrl = `${req.protocol}://${req.get("host")}/processed_images/${outputFilename}`;
+
+        // Força o download seguro
+        res.setHeader("Content-Disposition", `attachment; filename=${outputFilename}`);
+        res.setHeader("Content-Type", "image/png");
+
+        res.json({ resizedImageUrl });
+    } catch (error) {
+        res.status(500).json({ error: "Erro ao processar imagem" });
     }
-
-    const inputPath = req.file.path;
-    const outputFilename = `resized_${Date.now()}.png`;
-    const outputPath = path.join(processedDir, outputFilename);
-
-    await sharp(inputPath)
-        .resize(350)
-        .toFormat('png', { quality: 90 })
-        .toFile(outputPath);
-
-    const resizedImageUrl = `${req.protocol}://${req.get('host')}/processed_images/${outputFilename}`;
-    res.json({ resizedImageUrl });
 });
 
 app.delete('/clear-storage', (req, res) => {
@@ -201,6 +318,42 @@ app.delete('/clear-storage', (req, res) => {
         });
     });
     res.json({ message: 'Pastas limpas com sucesso!' });
+});
+
+app.post('/register', async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
+        const adminToken = req.headers.authorization;
+
+        if (!adminToken || adminToken !== `Bearer ${process.env.ADMIN_REGISTER_TOKEN}`) {
+            return res.status(403).json({ error: 'Acesso negado! Token inválido.' });
+        }
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Nome, e-mail e senha são obrigatórios!' });
+        }
+
+        let users = loadUsers();
+        if (users.find(u => u.email === email)) {
+            return res.status(400).json({ error: 'E-mail já registrado!' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = { id: Date.now(), name, email, password: hashedPassword };
+        users.push(newUser);
+
+        try {
+            fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+        } catch (err) {
+            return res.status(500).json({ error: 'Erro ao salvar usuário!' });
+        }
+
+        res.json({ message: 'Usuário registrado com sucesso!', user: { id: newUser.id, name, email } });
+    } catch (error) {
+        console.error("Erro ao registrar usuário:", error);
+        res.status(500).json({ error: 'Erro interno do servidor.' });
+    }
 });
 
 app.listen(PORT, () => {
