@@ -1,7 +1,8 @@
 # Nowtomation_Dynamimages
  Simple and specific program that allows you to create images using variables.Can be Self hosted is open source making it a viable alternative compared to programs like Nifty.
  
-![Nowtomation](https://github.com/user-attachments/assets/83c80d27-3d07-49f8-b44e-bf14f98593e3)
+![Nowtomation (2)](https://github.com/user-attachments/assets/d5b5cc24-5b27-40cb-ab05-7d0b8b008db2)
+
 
 1. --> npm install.
 2. --> npm update.
