@@ -12,4 +12,5 @@
 6. --> The program will run on port 3000 (https://localhost:3000/Dynamimages). To access it from a domain without needing to specify the port, use a reverse proxy with NGINX.
 
 *Any ideas, opinions or requests about the project send to the email 'natanchester665@gmail.com'.
+
 *I will soon create a document with the api documentation.
