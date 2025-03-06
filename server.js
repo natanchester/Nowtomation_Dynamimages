@@ -76,21 +76,32 @@ function verificaAutenticacao(req, res, next) {
 }
 
 app.use((req, res, next) => {
-    const publicRoutes = ['/login', '/login-page', '/register'];
+    const openRoutes = ['/login', '/login-page']; // Apenas essas podem ser acessadas sem token
+    const protectedPublicRoutes = ['/register', '/generate-image']; // Exigem token, mesmo sendo "públicas"
 
-    // Se a rota for pública, permite acesso
-    if (publicRoutes.includes(req.path)) {
+    // Se for uma rota de login, permite acesso sem token
+    if (openRoutes.includes(req.path)) {
         return next();
+    }
+
+    // Obtém o token do header
+    const token = req.headers.authorization?.split(' ')[1];
+
+    // Se for uma API e o token de autorização estiver correto, permite acesso
+    if (req.headers.accept?.includes('application/json') && token === API_TOKEN) {
+        return next();
+    }
+
+    // Se for uma rota pública protegida, valida o token antes de permitir acesso
+    if (protectedPublicRoutes.includes(req.path)) {
+        if (token === API_TOKEN) {
+            return next();
+        }
+        return res.status(401).json({ error: 'Token inválido para esta rota!' });
     }
 
     // Se o usuário estiver autenticado via sessão, permite acesso
     if (req.session.user) {
-        return next();
-    }
-
-    // Se for uma API (requisição JSON) e o token de autorização estiver correto, permite acesso
-    const token = req.headers.authorization?.split(' ')[1]; // Obtém o token do header
-    if (req.headers.accept?.includes('application/json') && token === API_TOKEN) {
         return next();
     }
 
@@ -102,6 +113,8 @@ app.use((req, res, next) => {
     // Se não for API, redireciona para a página de login
     return res.redirect('/login-page');
 });
+
+
 
 app.use('/Dynamimages', express.static('public'));
 
