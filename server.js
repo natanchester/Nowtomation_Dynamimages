@@ -24,6 +24,8 @@ app.get('/', (req, res) => {
     res.status(404).send('Página não encontrada');
 });
 
+
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDir);
@@ -115,9 +117,11 @@ app.use((req, res, next) => {
 });
 
 
-
 app.use('/Dynamimages', express.static('public'));
 
+app.get('/Documentation', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'documentação.html'));
+});
 
 
 async function authenticateUser(email, password) {

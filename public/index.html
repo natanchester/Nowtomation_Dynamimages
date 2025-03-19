@@ -48,13 +48,6 @@ body {
     height: 200px;
 }
 
-h3 {
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 18px;
-    font-weight: bold;
-}
-
 .controls {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -69,11 +62,21 @@ input[type="text"], input[type="file"], textarea {
 }
 
 input[type="color"] {
-    width: 50px;
-    height: 40px;
+    width: 100%;
+    height: 20px;
     border: none;
+    cursor: grab;
 }
 
+input[type="range"] {
+    width: 100%;
+}
+
+.upload {
+    display: block;
+    padding-top: 10px;
+    padding-bottom: 5px;
+}
 
 button {
     width: 100%;
@@ -123,7 +126,7 @@ button:hover {
             #openModal { position: fixed; width: 270px; bottom: 20px; right: 20px; padding: 10px 20px;     background: #32A6BD;
                 ; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 2000; }
 
-            #clearStorage {position: fixed; width: 270px; bottom: 20px; left: 20px; padding: 10px 20px;     background: #32A6BD;
+            #clearStorage {position: fixed; width: 270px; bottom: 20px; right: 300px; padding: 10px 20px;     background: #32A6BD;
                 color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 2000; }
 
                 #openModal:hover {
@@ -135,9 +138,55 @@ button:hover {
     background: #2FC089;
     
 }
+
+.help-icon {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            background-color: #32A6BD;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s;
+        }
+
+        .help-icon:hover {
+            background-color: #2FC089;
+        }
+
+        .help-icon::after {
+            content: "API Documentação";
+            position: absolute;
+            top: 35px;
+            right: 0;
+            background-color: #32A6BD;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .help-icon:hover::after {
+            opacity: 1;
+        }
         </style>
 </head>
 <body>
+
+    <a href="/Documentation" class="help-icon" target="_self">?</a>
 
     <button id="clearStorage">Limpar Armazenamento</button>
 
@@ -155,28 +204,30 @@ button:hover {
         <div class="left-panel">
            
             <div class="section">
-                <label>Imagem Base (Deve ter exatamente 350px de largura):</label>
+                <label class="upload">Imagem Base (Deve ter exatamente 350px de largura):</label>
                 <input type="file" id="baseImageInput" accept="image/*">
-                <label>Imagem Sobreposta Deve ter exatamente o formato 1:1:</label>
+                <label class="upload">Imagem Sobreposta Deve ter exatamente o formato 1:1:</label>
                 <input type="file" id="overlayImageInput" accept="image/*">
-                <label>Texto:</label>
+                <label class="upload">Texto:</label>
                 <input type="text" id="textInput" placeholder="Digite seu texto">
             </div>
             
             <div class="section controls">
-                <label>Tamanho: <input type="range" id="sizeRange" min="50" max="500" value="100"></label>
-                <label>Posição X: <input type="range" id="posXRange" min="0" max="500" value="50"></label>
-                <label>Posição Y: <input type="range" id="posYRange" min="0" max="500" value="50"></label>
-                <label>Border Radius: <input type="range" id="borderRadiusRange" min="0" max="100" value="0"></label>
-                <label>Cor do Texto: <input type="color" id="textColor"></label>
-                <label>Tamanho do Texto: <input type="range" id="textSizeRange" min="10" max="100" value="20"></label>
-                <label>Posição X Texto: <input type="range" id="textPosXRange" min="0" max="500" value="50"></label>
-                <label>Posição Y Texto: <input type="range" id="textPosYRange" min="0" max="800" value="50"></label>
+                <label>Tamanho: <br><input type="range" id="sizeRange" min="50" max="500" value="100"></label>
+                <label>Posição X: <br><input type="range" id="posXRange" min="0" max="500" value="50"></label>
+                <label>Posição Y: <br><input type="range" id="posYRange" min="0" max="500" value="50"></label>
+                <label>Border Radius: <br><input type="range" id="borderRadiusRange" min="0" max="100" value="0"></label>
+                <label>Cor do Texto: <br><input type="color" id="textColor"></label>
+                <label>Tamanho do Texto: <br><input type="range" id="textSizeRange" min="10" max="100" value="20"></label>
+                <label>Posição X Texto: <br><input type="range" id="textPosXRange" min="0" max="500" value="50"></label>
+                <label>Posição Y Texto: <br><input type="range" id="textPosYRange" min="0" max="800" value="50"></label>
             </div>
             
             <div class="section">
                 <button onclick="generateCurl()">Gerar cURL</button>
                 <textarea id="curlCommand" readonly></textarea>
+            
+                <button onclick="copyCurl()">Copiar cURL</button>
             </div>
         </div>
     
@@ -198,7 +249,7 @@ fetch('/verifica-sessao')
 
         let baseImageUrl = '';
         let overlayImageUrl = '';
-        const API_TOKEN = 'minhasenhaadmin123'; // Substitua pelo token correto
+        const API_TOKEN = 'natan1234564e56ty5h4wrth68eyh6nwsrthw445j65et564jnwrtj65eyt5m6erywr8t4ny65wr4t6h5w45'; // Substitua pelo token correto
 
         document.getElementById('baseImageInput').addEventListener('change', async function(event) {
             const file = event.target.files[0];
@@ -279,8 +330,7 @@ fetch('/verifica-sessao')
             const overlayPosX = document.getElementById('posXRange').value;
             const overlayPosY = document.getElementById('posYRange').value;
             const borderRadius = document.getElementById('borderRadiusRange').value;
-
-            const curlCommand = `curl -X POST "${window.location.origin}/generate-image" -H "Content-Type: application/json" -d 
+            const curlCommand = `curl -X POST "${window.location.origin}/generate-image" -H "Content-Type: application/json" -H "Authorization: Bearer ${API_TOKEN}" -d 
 '{
 "baseImage": "${baseImageUrl}",
 "overlayImage": "<url da imagem de overlay aqui>",
@@ -296,6 +346,17 @@ fetch('/verifica-sessao')
 }'`;
             document.getElementById('curlCommand').value = curlCommand;
         }
+
+        function copyCurl() {
+        const curlCommand = document.getElementById('curlCommand');
+        curlCommand.select();
+        curlCommand.setSelectionRange(0, 99999); // Para dispositivos móveis
+
+        document.execCommand('copy');
+
+        // Feedback ao usuário
+        alert('Comando cURL copiado para a área de transferência!');
+    }
 
         document.getElementById("openModal").addEventListener("click", function() {
                 document.getElementById("modal").style.display = "flex";
