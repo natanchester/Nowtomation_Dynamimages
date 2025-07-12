@@ -206,12 +206,28 @@ function escapeXml(str) {
     });
 }
 
+
 app.post('/generate-image', async (req, res) => {
     try {
-        const { baseImage, overlayImage, text, textColor, textSize, textPosX, textPosY, overlaySize, overlayPosX, overlayPosY, overlayRadius } = req.body;
+        const {
+            baseImage,
+            overlayImage,
+            text,
+            textColor,
+            textSize,
+            textPosX,
+            textPosY,
+            overlaySize,
+            overlayPosX,
+            overlayPosY,
+            overlayRadius,
+            textAlign = 'center',
+            fontWeight = 'bold',
+            fontFamily = 'Arial'
+        } = req.body;
 
         if (!baseImage || !overlaySize || !overlayPosX || !overlayPosY || !overlayRadius) {
-            return res.status(400).json({ error: 'Os campos obrigatórios (baseImage, overlaySize, overlayPosX, overlayPosY, overlayRadius) são necessários!' });
+            return res.status(400).json({ error: 'Campos obrigatórios ausentes.' });
         }
 
         const basePath = path.join(uploadDir, path.basename(baseImage));
@@ -223,30 +239,31 @@ app.post('/generate-image', async (req, res) => {
         const baseWidth = baseMetadata.width;
         const baseHeight = baseMetadata.height;
 
-        let overlayBuffer = null;
+        const scaleFactor = baseWidth / 350;
 
+        let overlayBuffer = null;
         if (overlayImage) {
-            const overlayPath = overlayImage.startsWith('http') ? await downloadImage(overlayImage) : path.join(uploadDir, path.basename(overlayImage));
+            const overlayPath = overlayImage.startsWith('http')
+                ? await downloadImage(overlayImage)
+                : path.join(uploadDir, path.basename(overlayImage));
+
             if (!fs.existsSync(overlayPath)) {
                 return res.status(400).json({ error: 'Overlay não encontrada' });
             }
 
             const overlayMetadata = await sharp(overlayPath).metadata();
-            let overlayWidth = parseInt(overlaySize);
+            let overlayWidth = Math.round(parseInt(overlaySize) * scaleFactor);
             let overlayHeight = Math.round((overlayMetadata.height / overlayMetadata.width) * overlayWidth);
 
             if (overlayWidth > baseWidth) overlayWidth = baseWidth;
             if (overlayHeight > baseHeight) overlayHeight = baseHeight;
 
-            // Corrigir a geração do SVG
             const maskSvg = `
                 <svg xmlns="http://www.w3.org/2000/svg" width="${overlayWidth}" height="${overlayHeight}">
-                    <rect x="0" y="0" width="${overlayWidth}" height="${overlayHeight}" rx="${overlayRadius}" ry="${overlayRadius}" fill="white"/>
+                    <rect x="0" y="0" width="${overlayWidth}" height="${overlayHeight}" rx="${overlayRadius * scaleFactor}" ry="${overlayRadius * scaleFactor}" fill="white"/>
                 </svg>`;
-
             const maskBuffer = Buffer.from(maskSvg);
 
-            // Processar overlay com a máscara
             overlayBuffer = await sharp(overlayPath)
                 .resize(overlayWidth, overlayHeight)
                 .ensureAlpha()
@@ -255,40 +272,32 @@ app.post('/generate-image', async (req, res) => {
                 .toBuffer();
         }
 
-        // Processar o texto apenas se ele estiver presente
         let textBuffer = null;
         if (text) {
-            // Escapar caracteres especiais no texto
             const escapedText = escapeXml(text);
+            let textSizeNum = parseInt(textSize) * scaleFactor;
+            const textPosYNum = parseInt(textPosY) * scaleFactor;
 
-            const textPosYNum = parseInt(textPosY, 10) || 0;
-            let textSizeNum = parseInt(textSize, 10) || 0;
-
-            // Criar SVG temporário para medir a largura do texto
-            let tempSvg = `
+            const tempSvg = `
                 <svg xmlns="http://www.w3.org/2000/svg">
-                    <text x="0" y="${textSizeNum}" font-size="${textSizeNum}" font-family="Arial" font-weight="bold">${escapedText}</text>
+                    <text x="0" y="${textSizeNum}" font-size="${textSizeNum}" font-family="${fontFamily}" font-weight="${fontWeight}">${escapedText}</text>
                 </svg>`;
-
-            let tempBuffer = Buffer.from(tempSvg);
+            const tempBuffer = Buffer.from(tempSvg);
             let { width: textWidth } = await sharp(tempBuffer).metadata();
 
-            // Se o texto for maior que 300px, reduzir proporcionalmente
-            if (textWidth > 300) {
-                const scaleFactor = 300 / textWidth;
-                textSizeNum = Math.floor(textSizeNum * scaleFactor);
-                textWidth = 300; // Atualiza a largura após redução
+            let adjustedTextPosX = 0;
+            if (textAlign === 'center') {
+                adjustedTextPosX = (baseWidth - textWidth) / 2;
+            } else if (textAlign === 'right') {
+                adjustedTextPosX = baseWidth - textWidth - 10;
+            } else {
+                adjustedTextPosX = parseInt(textPosX) * scaleFactor;
             }
 
-            // Recalcular a posição X para centralizar o texto
-            const adjustedTextPosX = (baseWidth - textWidth) / 2;
-
-            // Gerar SVG final do texto já ajustado
             const finalSvgText = `
                 <svg width="${baseWidth}" height="${baseHeight}" xmlns="http://www.w3.org/2000/svg">
-                    <text x="${adjustedTextPosX}" y="${textPosYNum + textSizeNum}" font-size="${textSizeNum}" fill="${textColor}" font-family="Arial" font-weight="bold">${escapedText}</text>
+                    <text x="${adjustedTextPosX}" y="${textPosYNum + textSizeNum}" font-size="${textSizeNum}" fill="${textColor}" font-family="${fontFamily}" font-weight="${fontWeight}">${escapedText}</text>
                 </svg>`;
-
             textBuffer = Buffer.from(finalSvgText);
         }
 
@@ -296,26 +305,25 @@ app.post('/generate-image', async (req, res) => {
         const outputPath = path.join(processedDir, outputFilename);
 
         const compositeArray = [];
-        
-        // Adiciona o texto à composição se ele estiver presente
-        if (textBuffer) {
-            compositeArray.push({ input: textBuffer, left: 0, top: 0 });
-        }
-
-        // Adiciona o overlay à composição se ele estiver presente
+        if (textBuffer) compositeArray.push({ input: textBuffer, left: 0, top: 0 });
         if (overlayBuffer) {
-            compositeArray.push({ input: overlayBuffer, left: parseInt(overlayPosX), top: parseInt(overlayPosY) });
+            compositeArray.push({
+                input: overlayBuffer,
+                left: Math.round(parseInt(overlayPosX) * scaleFactor),
+                top: Math.round(parseInt(overlayPosY) * scaleFactor)
+            });
         }
+        
 
-        // Compor a imagem com base, texto (se presente) e overlay (se presente)
         await sharp(basePath)
             .ensureAlpha()
             .composite(compositeArray)
             .png()
             .toFile(outputPath);
 
-        const processedImageUrl = `${req.protocol}://${req.get('host')}/processed_images/${outputFilename}`;
+            const processedImageUrl = `${req.protocol}://${req.get('host')}/processed_images/${outputFilename}`;
         res.json({ processedImageUrl });
+
     } catch (error) {
         console.error("Erro ao processar a imagem:", error);
         res.status(500).json({ error: "Erro ao processar a imagem." });

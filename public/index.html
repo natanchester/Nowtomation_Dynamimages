@@ -24,6 +24,7 @@ body {
 }
 
 .container {
+    padding-top: 20px;
     display: flex;
     gap: 30px;
     width: 100%;
@@ -96,8 +97,8 @@ button:hover {
 
 #preview-container {
     display: flex;
-    margin-left: 70%;
-    transform: translate(-50%);
+    right: 45%;
+    transform: translate(100%);
     justify-content: center;
     align-items: center;
     background: white;
@@ -108,28 +109,28 @@ button:hover {
 }
 
 #preview {
-    width: 100%;
-    max-width: 350px;
-    height: auto;
-    position: relative;
+    width: 350px;
     border-radius: 10px;
+    position: relative;
+    min-height: 350px;
+    max-height: 800px;
+    overflow: hidden;
+
 }
 
 #overlay, #textOverlay {
     position: absolute;
 }
+#clearStorage {
+    position: fixed; 
+    width: 270px; 
+    bottom: 15px; 
+    right: 15px; 
+    padding: 10px 20px;     
+    background: #32A6BD;            
+    color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 2000; }
 
-.modal { display: none; z-index: 2000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; }
-            .modal-content { background: white; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; position: relative; text-align: center; }
-            .close { cursor: pointer; position: absolute; top: 10px; right: 15px; font-size: 20px; }
-            .modal img { max-width: 50%; height: auto; display: block; margin: 10px auto; }
-            #openModal { position: fixed; width: 270px; bottom: 20px; right: 20px; padding: 10px 20px;     background: #32A6BD;
-                ; color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 2000; }
-
-            #clearStorage {position: fixed; width: 270px; bottom: 20px; right: 300px; padding: 10px 20px;     background: #32A6BD;
-                color: white; border: none; border-radius: 5px; cursor: pointer; z-index: 2000; }
-
-                #openModal:hover {
+#openModal:hover {
     background: #2FC089;
     
 }
@@ -190,38 +191,75 @@ button:hover {
 
     <button id="clearStorage">Limpar Armazenamento</button>
 
-    <button id="openModal">Redimensionar imagem base</button>
-    <div id="modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Envie sua imagem</h2>
-            <input type="file" id="imageInput">
-            <button onclick="uploadImage()">Redimensionar</button>
-            <p id="output"></p>
-        </div>
-    </div>
     <div class="container">
         <div class="left-panel">
            
             <div class="section">
-                <label class="upload">Imagem Base (Deve ter exatamente 350px de largura):</label>
+                <label class="upload">Imagem Base:</label>
                 <input type="file" id="baseImageInput" accept="image/*">
-                <label class="upload">Imagem Sobreposta Deve ter exatamente o formato 1:1:</label>
+                <label class="upload">Imagem Sobreposta:</label>
                 <input type="file" id="overlayImageInput" accept="image/*">
                 <label class="upload">Texto:</label>
                 <input type="text" id="textInput" placeholder="Digite seu texto">
             </div>
             
             <div class="section controls">
-                <label>Tamanho: <br><input type="range" id="sizeRange" min="50" max="500" value="100"></label>
-                <label>Posição X: <br><input type="range" id="posXRange" min="0" max="500" value="50"></label>
-                <label>Posição Y: <br><input type="range" id="posYRange" min="0" max="500" value="50"></label>
+                <label>Tamanho: <br><input type="range" id="sizeRange" min="10" max="500" value="100"></label>
+            
+                <!-- Barras de controle para movimentação do texto -->
+                <label>Posição X: <br><input type="range" id="posXRange" min="-350" max="350" value="0"></label>
+                <label>Posição Y: <br><input type="range" id="posYRange" min="-800" max="800" value="0"></label>
+            
                 <label>Border Radius: <br><input type="range" id="borderRadiusRange" min="0" max="100" value="0"></label>
+            
                 <label>Cor do Texto: <br><input type="color" id="textColor"></label>
-                <label>Tamanho do Texto: <br><input type="range" id="textSizeRange" min="10" max="100" value="20"></label>
-                <label>Posição X Texto: <br><input type="range" id="textPosXRange" min="0" max="500" value="50"></label>
-                <label>Posição Y Texto: <br><input type="range" id="textPosYRange" min="0" max="800" value="50"></label>
+            
+                <label>Tamanho do Texto: <br><input type="range" id="textSizeRange" min="5" max="100" value="20"></label>
+            
+                <!-- Barra de controle para a posição X do texto -->
+                <label>Posição X Texto: <br><input type="range" id="textPosXRange" min="-350" max="350" value="0"></label>
+            
+                <!-- Barra de controle para a posição Y do texto -->
+                <label>Posição Y Texto: <br><input type="range" id="textPosYRange" min="-800" max="800" value="0"></label>
+            
+                <label>Fonte:
+                    <select id="fontFamily">
+                        <option value="Arial">Arial</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Tahoma">Tahoma</option>
+                        <option value="Comic Sans MS">Comic Sans MS</option>
+                        <option value="Tahoma">Tahoma</option>
+                        <option value="Trebuchet MS">Trebuchet MS</option>
+                        <option value="Lucida Sans">Lucida Sans</option>
+                    </select>
+                </label>
+            
+                <label>Peso da Fonte:
+                    <select id="fontWeight">
+                        <option value="normal">Normal</option>
+                        <option value="bold">Negrito</option>
+                        <option value="lighter">Mais leve</option>
+                        <option value="100">100</option>
+                        <option value="300">300</option>
+                        <option value="500">500</option>
+                        <option value="700">700</option>
+                        <option value="900">900</option>
+                    </select>
+                </label>
+            
+                <label>Alinhamento do Texto:
+                    <select id="textAlign">
+                        <option value="left">Esquerda</option>
+                        <option value="center">Centralizado</option>
+                        <option value="right">Direita</option>
+                    </select>
+                </label>
+            
             </div>
+            
             
             <div class="section">
                 <button onclick="generateCurl()">Gerar cURL</button>
@@ -277,106 +315,109 @@ fetch('/verifica-sessao')
         });
 
         function updatePreview() {
-            const preview = document.getElementById('preview');
-            preview.innerHTML = '';
+    const preview = document.getElementById('preview');
+    preview.innerHTML = ''; // Limpa a visualização a cada atualização
 
-            if (baseImageUrl) {
-                const img = document.createElement('img');
-                img.src = baseImageUrl;
-                img.style.width = '350px';
-                img.style.height = '100%';
-                preview.appendChild(img);
-            }
+    // Exibe a imagem base, se disponível
+    if (baseImageUrl) {
+        const img = document.createElement('img');
+        img.src = baseImageUrl;
+        img.style.width = '350px';
+        img.style.height = '100%';
+        preview.appendChild(img);
+    }
 
-            if (overlayImageUrl) {
-                const overlay = document.createElement('img');
-                overlay.src = overlayImageUrl;
-                overlay.id = 'overlay';
-                overlay.style.width = document.getElementById('sizeRange').value + 'px';
-                overlay.style.height = document.getElementById('sizeRange').value + 'px';
-                overlay.style.position = 'absolute';
-                overlay.style.top = document.getElementById('posYRange').value + 'px';
-                overlay.style.left = document.getElementById('posXRange').value + 'px';
-                overlay.style.borderRadius = document.getElementById('borderRadiusRange').value + '%';
-                preview.appendChild(overlay);
-            }
+    // Exibe o overlay, se disponível
+    if (overlayImageUrl) {
+        const overlay = document.createElement('img');
+        overlay.src = overlayImageUrl;
+        overlay.id = 'overlay';
+        overlay.style.width = document.getElementById('sizeRange').value + 'px';
+        overlay.style.height = document.getElementById('sizeRange').value + 'px';
+        overlay.style.position = 'absolute';
+        overlay.style.top = document.getElementById('posYRange').value + 'px';
+        overlay.style.left = document.getElementById('posXRange').value + 'px';
+        overlay.style.borderRadius = document.getElementById('borderRadiusRange').value + '%';
+        preview.appendChild(overlay);
+    }
 
-            const text = document.getElementById('textInput').value;
-            if (text) {
-                const textOverlay = document.createElement('div');
-                textOverlay.id = 'textOverlay';
-                textOverlay.textContent = text;
-                textOverlay.style.position = 'absolute';
-                textOverlay.style.color = document.getElementById('textColor').value;
-                textOverlay.style.fontSize = document.getElementById('textSizeRange').value + 'px';
-                textOverlay.style.left = document.getElementById('textPosXRange').value + 'px';
-                textOverlay.style.top = document.getElementById('textPosYRange').value + 'px';
-                textOverlay.style.fontWeight = 'bold';
-                preview.appendChild(textOverlay);
-            }
-        }
+    // Exibe o texto, se houver
+    const text = document.getElementById('textInput').value;
+    if (text) {
+        const textOverlay = document.createElement('div');
+        textOverlay.id = 'textOverlay';
+        textOverlay.textContent = text;
 
-        document.querySelectorAll('.controls input').forEach(input => {
-            input.addEventListener('input', updatePreview);
-        });
+        // Estilo do texto com base nos parâmetros do usuário
+        textOverlay.style.position = 'absolute';
+        textOverlay.style.color = document.getElementById('textColor').value;
+        textOverlay.style.fontSize = document.getElementById('textSizeRange').value + 'px';
+        textOverlay.style.fontFamily = document.getElementById('fontFamily').value; // Adiciona a fonte
+        textOverlay.style.fontWeight = document.getElementById('fontWeight').value; // Adiciona o peso
+        textOverlay.style.textAlign = document.getElementById('textAlign').value; // Alinhamento
+        textOverlay.style.left = document.getElementById('textPosXRange').value + 'px';
+        textOverlay.style.top = document.getElementById('textPosYRange').value + 'px';
 
-        function generateCurl() {
-            const text = document.getElementById('textInput').value;
-            const textColor = document.getElementById('textColor').value;
-            const textSize = document.getElementById('textSizeRange').value;
-            const textPosX = document.getElementById('textPosXRange').value;
-            const textPosY = document.getElementById('textPosYRange').value;
-            const overlaySize = document.getElementById('sizeRange').value;
-            const overlayPosX = document.getElementById('posXRange').value;
-            const overlayPosY = document.getElementById('posYRange').value;
-            const borderRadius = document.getElementById('borderRadiusRange').value;
-            const curlCommand = `curl -X POST "${window.location.origin}/generate-image" -H "Content-Type: application/json" -H "Authorization: Bearer ${API_TOKEN}" -d 
-'{
+        preview.appendChild(textOverlay);
+    }
+}
+
+// Adicionando os eventos para 'input' e 'change' em todos os controles
+document.querySelectorAll('.controls input, .controls select').forEach(input => {
+    input.addEventListener('input', updatePreview); // Para controles de 'input' como range e color
+    input.addEventListener('change', updatePreview); // Para controles de 'select' como fonte, peso e alinhamento
+});
+
+
+
+function generateCurl() {
+    const text = document.getElementById('textInput').value;
+    const textColor = document.getElementById('textColor').value;
+    const textSize = document.getElementById('textSizeRange').value;
+    const textPosX = document.getElementById('textPosXRange').value;
+    const textPosY = document.getElementById('textPosYRange').value;
+    const overlaySize = document.getElementById('sizeRange').value;
+    const overlayPosX = document.getElementById('posXRange').value;
+    const overlayPosY = document.getElementById('posYRange').value;
+    const borderRadius = document.getElementById('borderRadiusRange').value;
+
+    // Novos parâmetros: Alinhamento, Peso e Fonte
+    const fontFamily = document.getElementById('fontFamily').value;
+    const fontWeight = document.getElementById('fontWeight').value;
+    const textAlign = document.getElementById('textAlign').value;
+
+    const curlCommand = `curl -X POST "${window.location.origin}/generate-image" -H "Content-Type: application/json" -H "Authorization: Bearer ${API_TOKEN}" -d '
+{
 "baseImage": "${baseImageUrl}",
 "overlayImage": "<url da imagem de overlay aqui>",
-"text": "<texto personalizado aqui>",
+"text": "${text}",
 "textColor": "${textColor}",
 "textSize": "${textSize}",
 "textPosX": "${textPosX}",
 "textPosY": "${textPosY}",
+"fontFamily": "${fontFamily}",
+"fontWeight": "${fontWeight}",
+"textAlign": "${textAlign}",
 "overlaySize": "${overlaySize}",
 "overlayPosX": "${overlayPosX}",
 "overlayPosY": "${overlayPosY}",
 "overlayRadius": "${borderRadius}"
 }'`;
-            document.getElementById('curlCommand').value = curlCommand;
-        }
 
-        function copyCurl() {
-        const curlCommand = document.getElementById('curlCommand');
-        curlCommand.select();
-        curlCommand.setSelectionRange(0, 99999); // Para dispositivos móveis
+    // Atualizando a caixa de texto com o comando cURL gerado
+    document.getElementById('curlCommand').value = curlCommand;
+}
 
-        document.execCommand('copy');
+function copyCurl() {
+    const curlCommand = document.getElementById('curlCommand');
+    curlCommand.select();
+    curlCommand.setSelectionRange(0, 99999); // Para dispositivos móveis
 
-        // Feedback ao usuário
-        alert('Comando cURL copiado para a área de transferência!');
-    }
+    document.execCommand('copy');
 
-        document.getElementById("openModal").addEventListener("click", function() {
-                document.getElementById("modal").style.display = "flex";
-            });
-            function closeModal() {
-                document.getElementById("modal").style.display = "none";
-                document.getElementById("output").innerHTML = "";
-            }
-            function uploadImage() {
-                const fileInput = document.getElementById("imageInput").files[0];
-                if (!fileInput) return alert("Escolha uma imagem!");
-                const formData = new FormData();
-                formData.append("image", fileInput);
-                fetch("/resize-image", { method: "POST", body: formData, headers: { 'Authorization': `Bearer ${API_TOKEN}` } })
-                    .then(res => res.json())
-                    .then(data => {
-                        document.getElementById("output").innerHTML = `<p>Imagem redimensionada para 350px de largura:</p><img src="${data.resizedImageUrl}"><p>Clique com o botão direito e escolha 'Salvar como', clique em manter o download caso necessário.</p>`;
-                    })
-                    .catch(() => alert("Erro ao enviar imagem!"));
-            }
+    // Feedback ao usuário
+    alert('Comando cURL copiado para a área de transferência!');
+}
 
             document.getElementById("clearStorage").addEventListener("click", function() {
                 if (confirm("Tem certeza que deseja apagar todas as imagens? Isso pode interromper automações.")) {
