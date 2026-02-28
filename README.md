@@ -1,16 +1,81 @@
-# Nowtomation_Dynamimages
- Simple and specific program that allows you to create images using variables.Can be Self hosted is open source making it a viable alternative compared to programs like Nifty.
- 
-![Nowtomation (2)](https://github.com/user-attachments/assets/d5b5cc24-5b27-40cb-ab05-7d0b8b008db2)
+# 🖼️ Projeto de Imagens Dinâmicas
 
-0. --> Download node.js (https://nodejs.org/) .
-1. --> npm install.
-2. --> npm update.
-3. --> Set your token and session secret in the .env file.
-4. --> Use the /register endpoint along with the token you defined to create your login.
-5. --> Run the program with the 'npm start' command.
-6. --> The program will run on port 3000 (https://localhost:3000/Dynamimages). To access it from a domain without needing to specify the port, use a reverse proxy with NGINX.
+![alt text](logo.png)
 
-*Any ideas, opinions or requests about the project send to the email 'natanchester665@gmail.com'.
+Sistema full stack para **geração e composição de imagens dinâmicas**, com backend em Node.js e frontend em React (Vite).  
+Permite combinar imagens base, overlays, textos e estilos via API.
 
-*I will soon create a document with the api documentation.
+---
+
+## ✅ Pré-requisitos
+
+- Node.js **18+** (recomendado)
+- npm
+- Git
+
+---
+
+## 🚀 Passo a passo para rodar o projeto
+
+1️⃣ Clonar o repositório
+
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd <PASTA_DO_PROJETO>
+
+2️⃣ Instalar dependências
+
+Backend
+cd backend
+npm install
+
+Frontend
+cd frontend
+npm install
+
+3️⃣ Configurar variáveis de ambiente (.env)
+
+Backend (backend/.env)
+
+Edite o arquivo .env e ajuste tokens, segredos e URLs:
+
+Frontend (/src/lib/api.ts)
+
+Configure a URL da API:
+
+VITE_API_URL=http://localhost:3000
+
+Usando túnel (opcional):
+
+Caso queira expor o projeto externamente (ex: Cloudflare Tunnel, ngrok):
+
+Crie um túnel para o frontend
+
+Crie outro túnel para o backend
+
+Atualize:
+
+FRONTEND_URL no backend
+
+VITE_API_URL no frontend
+
+Reinicie ambos os serviços
+
+4️⃣ Gerar acessos iniciais (usuário/admin)
+
+Antes de rodar o sistema pela primeira vez, é necessário gerar os acessos iniciais.
+
+Backend
+
+Abra o arquivo:
+
+backend/setup.js
+
+Edite email e senha desejados diretamente no arquivo:
+
+const email = "seuemail@dominio.com";
+const password = "suasenha";
+
+Execute o script:
+
+npm run setup
