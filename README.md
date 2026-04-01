@@ -9,9 +9,44 @@ Permite combinar imagens base, overlays, textos e estilos via API.
 
 ## ✅ Pré-requisitos
 
-- Node.js **18+** (recomendado)
-- npm
-- Git
+- Node.js **18+** (recomendado):
+
+Acesse o site oficial:
+👉 https://nodejs.org
+
+Baixe a versão LTS (recomendada)
+
+Certifique-se que é 18 ou superior (hoje normalmente já é 20+)
+
+Execute o instalador .msi
+
+Durante a instalação:
+Clique em Next até o final
+
+Mantenha todas as opções padrão
+
+Importante: deixe marcado “Add to PATH”
+
+Finalize a instalação
+
+- Git:
+
+Acesse:
+👉 https://git-scm.com
+
+Clique em Download for Windows
+
+Execute o instalador
+
+Durante a instalação:
+Pode deixar tudo padrão
+
+Quando aparecer:
+“Choosing the default editor” → pode deixar Vim ou escolher VS Code (se tiver)
+
+“Adjusting your PATH” → deixe Git from the command line
+
+Finalize
 
 ---
 
@@ -29,7 +64,11 @@ npm run install:all
 
 3️⃣ Configurar variáveis de ambiente (.env)
 
+Rode no terminal:
+
 node backend/setup-env.js
+
+siga o passo a passo
 
 
 4️⃣ Gerar acessos iniciais (usuário/admin)
@@ -40,6 +79,16 @@ Rode no terminal:
 
 node backend/setup.js
 
+siga o passo a passo
+
 5️⃣ Iniciar backend e frontend:
 
 npm run dev:all
+```
+
+
+No caso de erro 403 verificar se essa opção está desativada na cloudflare:
+
+![alt text](image.png)
+
+Ela impede o funcionamento normal das requisições
