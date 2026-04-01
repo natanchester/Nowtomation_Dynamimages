@@ -25,13 +25,7 @@ cd <PASTA_DO_PROJETO>
 
 2️⃣ Instalar dependências
 
-Backend
-cd backend
-npm install
-
-Frontend
-cd frontend
-npm install
+npm run install:all
 
 3️⃣ Configurar variáveis de ambiente (.env)
 
@@ -65,17 +59,10 @@ Reinicie ambos os serviços
 
 Antes de rodar o sistema pela primeira vez, é necessário gerar os acessos iniciais.
 
-Backend
+Rode no terminal:
 
-Abra o arquivo:
+node backend/setup.js
 
-backend/setup.js
+5️⃣ Iniciar backend e frontend:
 
-Edite email e senha desejados diretamente no arquivo:
-
-const email = "seuemail@dominio.com";
-const password = "suasenha";
-
-Execute o script:
-
-npm run setup
+npm run dev:all
