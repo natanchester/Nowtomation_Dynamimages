@@ -5,14 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
-    port: 8080,
-    allowedHosts: [
-      "dynamimages.natanchester.com.br"
-    ],
-    hmr: {
-      overlay: false,
-    },
+    allowedHosts: [".natanchester.com.br"]
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

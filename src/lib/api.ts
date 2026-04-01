@@ -1,6 +1,6 @@
 // API configuration - set your backend URL here
 const API_BASE =
-  import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  import.meta.env.VITE_API_URL || 'https://back.natanchester.com.br';
   
 export function getApiUrl(path: string): string {
   return `${API_BASE}${path}`;

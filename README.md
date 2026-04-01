@@ -29,31 +29,8 @@ npm run install:all
 
 3️⃣ Configurar variáveis de ambiente (.env)
 
-Backend (backend/.env)
+node backend/setup-env.js
 
-Edite o arquivo .env e ajuste tokens, segredos e URLs:
-
-Frontend (/src/lib/api.ts)
-
-Configure a URL da API:
-
-VITE_API_URL=http://localhost:3000
-
-Usando túnel (opcional):
-
-Caso queira expor o projeto externamente (ex: Cloudflare Tunnel, ngrok):
-
-Crie um túnel para o frontend
-
-Crie outro túnel para o backend
-
-Atualize:
-
-FRONTEND_URL no backend
-
-VITE_API_URL no frontend
-
-Reinicie ambos os serviços
 
 4️⃣ Gerar acessos iniciais (usuário/admin)
 
