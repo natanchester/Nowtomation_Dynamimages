@@ -36,6 +36,11 @@ const ENDPOINTS = [
     "overlayPosY":10,
     "overlayRadius":20
   }'`,
+    response: `Status: 200 OK
+
+{
+  "processedImageUrl": "https://seu-dominio.com/imagens/resultado.png"
+}`,
   },
 ];
 
@@ -68,9 +73,16 @@ const Documentation = () => {
               <CardTitle className="text-base">{ep.title}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <pre className="rounded-lg bg-muted p-4 text-xs font-mono overflow-x-auto text-foreground whitespace-pre-wrap">
+              <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-muted p-4 font-mono text-xs text-foreground">
                 {ep.curl}
               </pre>
+
+              {ep.response && (
+                <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-muted p-4 font-mono text-xs text-foreground">
+                  {ep.response}
+                </pre>
+              )}
+
               <Button variant="outline" className="w-full" onClick={() => copyToClipboard(ep.curl)}>
                 <Copy className="mr-2 h-4 w-4" /> Copiar cURL
               </Button>
