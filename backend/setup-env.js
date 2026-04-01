@@ -21,7 +21,7 @@ function createEnv({ domain, frontSub, backSub }) {
 
   const backendUrl = domain
     ? `https://${backSub}.${domain}`
-    : "http://localhost:3000";
+    : "http://localhost:5173";
 
   const content = `
 ADMIN_API_TOKEN=${generateToken("ntm-api")}
@@ -151,7 +151,7 @@ function run() {
 
   const backendUrl = domain
     ? `https://${backSub}.${domain}`
-    : "http://localhost:3000";
+    : "http://localhost:5173";
 
   createEnv({ domain, frontSub, backSub });
 

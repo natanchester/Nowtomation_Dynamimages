@@ -25,7 +25,7 @@ const API_TOKEN = process.env.ADMIN_API_TOKEN;
 
 // ===================== CORS =====================
 // Coloque aqui a URL do seu frontend no Cloudflare Pages
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 app.use(cors({
     origin: FRONTEND_URL,
