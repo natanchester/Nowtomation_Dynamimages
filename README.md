@@ -86,9 +86,10 @@ siga o passo a passo
 npm run dev:all
 ```
 
+<img width="1524" height="840" alt="Captura de tela 2026-04-01 123755" src="https://github.com/user-attachments/assets/ab209cf4-a8ba-40a5-bd70-3e22d4107397" />
 
 No caso de erro 403 verificar se essa opção está desativada na cloudflare:
 
-![alt text](image.png)
+
 
 Ela impede o funcionamento normal das requisições
