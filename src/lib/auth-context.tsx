@@ -15,7 +15,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [apiToken, setApiToken] = useState(() => localStorage.getItem('api_token') || '');
+  const [apiToken, setApiToken] = useState(() => localStorage.getItem('api_token') || import.meta.env.VITE_ADMIN_API_TOKEN || '');
 
   useEffect(() => {
     checkSession()

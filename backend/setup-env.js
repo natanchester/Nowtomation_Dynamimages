@@ -21,10 +21,12 @@ function createEnv({ domain, frontSub, backSub }) {
 
   const backendUrl = domain
     ? `https://${backSub}.${domain}`
-    : "http://localhost:5173";
+    : "http://localhost:3000";
 
-  const content = `
-ADMIN_API_TOKEN=${generateToken("ntm-api")}
+  const apiToken = generateToken("ntm-api");
+
+  const backendContent = `
+ADMIN_API_TOKEN=${apiToken}
 SESSION_SECRET=${generateToken("ntm-session")}
 ADMIN_REGISTER_TOKEN=${generateToken("ntm-register")}
 PORT=3000
@@ -32,9 +34,16 @@ FRONTEND_URL=${frontendUrl}
 VITE_API_URL=${backendUrl}
 `.trim();
 
-  fs.writeFileSync(ENV_PATH, content);
+  const frontendContent = `
+VITE_API_URL=${backendUrl}
+VITE_ADMIN_API_TOKEN=${apiToken}
+`.trim();
+
+  fs.writeFileSync(ENV_PATH, backendContent); // backend/.env
+  fs.writeFileSync(path.join(ROOT_PATH, ".env"), frontendContent); // raiz/.env (frontend)
 
   console.log("✅ .env do backend atualizado em:", ENV_PATH);
+  console.log("✅ .env do frontend atualizado em:", path.join(ROOT_PATH, ".env"));
 }
 
 function updateViteConfig(domain) {

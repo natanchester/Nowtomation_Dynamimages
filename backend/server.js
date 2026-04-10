@@ -1,13 +1,13 @@
 const express = require('express');
+const path = require('path'); // ← sobe para cá
 const session = require('express-session');
 const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
 const axios = require('axios');
 const sharp = require('sharp');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') }); // ← agora funciona
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -126,10 +126,17 @@ app.use((req, res, next) => {
 
     if (openRoutes.includes(req.path)) return next();
 
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(" ")[1];
 
-    if (req.headers.accept?.includes('application/json') && token === API_TOKEN) {
-        return next();
+    console.log("TOKEN RECEBIDO:", token);
+    console.log("TOKEN ESPERADO:", API_TOKEN);
+    console.log("SÃO IGUAIS?", token === API_TOKEN);
+
+    if (
+      req.headers.accept?.includes("application/json") &&
+      token === API_TOKEN
+    ) {
+      return next();
     }
 
     if (protectedPublicRoutes.includes(req.path)) {
